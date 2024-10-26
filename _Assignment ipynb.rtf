@@ -1,0 +1,183 @@
+{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 Courier New;}}
+{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
+\pard\f0\fs22\lang1033\{\par
+ "cells": [\par
+  \{\par
+   "cell_type": "code",\par
+   "execution_count": null,\par
+   "id": "a1becf1a-97b5-4f54-ae77-c0100979ef79",\par
+   "metadata": \{\},\par
+   "outputs": [\par
+    \{\par
+     "name": "stdout",\par
+     "output_type": "stream",\par
+     "text": [\par
+      "Added: 0\\n",\par
+      "Removed: 0\\n",\par
+      "Added: 1\\n",\par
+      "Removed: 1\\n",\par
+      "Added: 2\\n",\par
+      "Added: 3\\n",\par
+      "Added: 4\\n",\par
+      "Removed: 2\\n",\par
+      "Removed: 3\\n",\par
+      "Removed: 4\\n",\par
+      "Final List: []\\n",\par
+      "[1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800]\\n"\par
+     ]\par
+    \}\par
+   ],\par
+   "source": [\par
+    "\\n",\par
+    "\\n",\par
+    "\\n",\par
+    "\\n",\par
+    "#1. **Multithreading vs. Multiprocessing**:\\n",\par
+    " #  - **Multithreading** is preferable when tasks are I/O-bound (e.g., reading/writing files or network requests), as threads can handle multiple I/O operations without blocking each other. Threads share the same memory space, making communication between them faster.\\n",\par
+    "  # - **Multiprocessing** is a better choice for CPU-bound tasks (e.g., number crunching, heavy computations) since each process has its own memory space and can run independently on multiple CPU cores, providing true parallelism.\\n",\par
+    "#_________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________\\n",\par
+    "#2. **Process Pool**:\\n",\par
+    " #  - A **process pool** is a collection of worker processes used to execute tasks concurrently. It efficiently manages multiple processes by maintaining a pool of pre-spawned processes and reusing them for tasks. This reduces the overhead of creating and destroying processes\\n",\par
+    " # frequently and improves performance in scenarios with many short-lived tasks\\n",\par
+    " #______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________\\n",\par
+    "#3. **Multiprocessing in Python**:\\n",\par
+    " #  - **Multiprocessing** allows Python programs to execute in parallel across multiple CPU cores, overcoming the limitations imposed by the Global Interpreter Lock (GIL) in multithreaded programs. It is useful for CPU-bound tasks and\\n",\par
+    " # is implemented using the `multiprocessing` module in Python, enabling the use of multiple processes to run different parts of a program simultaneously.\\n",\par
+    "#_______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________\\n",\par
+    "\\n",\par
+    "\\n",\par
+    "#4. **Multithreading Program (Adding and Removing Numbers)**:\\n",\par
+    "import threading\\n",\par
+    "import time\\n",\par
+    "\\n",\par
+    "# Shared list\\n",\par
+    "numbers = []\\n",\par
+    "\\n",\par
+    "# Lock to avoid race conditions\\n",\par
+    "lock = threading.Lock()\\n",\par
+    "\\n",\par
+    "# Condition to ensure removal happens only after addition\\n",\par
+    "condition = threading.Condition(lock)\\n",\par
+    "\\n",\par
+    "# Function to add numbers\\n",\par
+    "def add_numbers():\\n",\par
+    "    for i in range(5):\\n",\par
+    "        with condition:\\n",\par
+    "            numbers.append(i)\\n",\par
+    "            print(f'Added: \{i\}')\\n",\par
+    "            # Notify the remove_numbers thread that an item has been added\\n",\par
+    "            condition.notify()\\n",\par
+    "            # Simulate a delay\\n",\par
+    "            time.sleep(1)\\n",\par
+    "\\n",\par
+    "# Function to remove numbers\\n",\par
+    "def remove_numbers():\\n",\par
+    "    for i in range(5):\\n",\par
+    "        with condition:\\n",\par
+    "            # Wait until there is something to remove\\n",\par
+    "            while not numbers:\\n",\par
+    "                condition.wait()\\n",\par
+    "            print(f'Removed: \{numbers.pop(0)\}')\\n",\par
+    "            # Simulate a delay\\n",\par
+    "            time.sleep(1)\\n",\par
+    "\\n",\par
+    "# Creating threads\\n",\par
+    "thread1 = threading.Thread(target=add_numbers)\\n",\par
+    "thread2 = threading.Thread(target=remove_numbers)\\n",\par
+    "\\n",\par
+    "# Starting threads\\n",\par
+    "thread1.start()\\n",\par
+    "thread2.start()\\n",\par
+    "\\n",\par
+    "# Waiting for threads to complete\\n",\par
+    "thread1.join()\\n",\par
+    "thread2.join()\\n",\par
+    "\\n",\par
+    "print('Final List:', numbers)\\n",\par
+    "\\n",\par
+    "#_________________________________________________________________________________________________________________________________________________________________________________________________\\n",\par
+    "\\n",\par
+    "#5. **Sharing Data between Threads and Processes in Python**:\\n",\par
+    " #  - **Threads**: You can share data between threads using **threading.Lock**, **Queue**, and **ThreadLocal** for thread-specific data.\\n",\par
+    "# - **Processes**: For sharing data between processes, Python provides **multiprocessing.Queue**, **multiprocessing.Pipe**, **Value**, and **Array** from the `multiprocessing` module.\\n",\par
+    "\\n",\par
+    "#_____________________________________________________________________________________________________________________________________________________________________________________________________________\\n",\par
+    "#6. **Handling Exceptions in Concurrent Programs**:\\n",\par
+    " #  - Exception handling in concurrent programs is critical to ensure program stability. Techniques include:\\n",\par
+    " #    - Using **try-except blocks** within threads or processes.\\n",\par
+    "#   - In the case of thread pools, **concurrent.futures.as_completed()** can be used to capture and handle exceptions from tasks.\\n",\par
+    " #   - Ensuring proper synchronization when handling exceptions in shared resources to prevent inconsistent states.\\n",\par
+    "#________________________________________________________________________________________________________________________________________________________________________________________________\\n",\par
+    "\\n",\par
+    "#7. **Thread Pool for Factorial Calculation**:\\n",\par
+    "\\n",\par
+    "from concurrent.futures import ThreadPoolExecutor\\n",\par
+    "import math\\n",\par
+    "\\n",\par
+    "def factorial(n):\\n",\par
+    "    return math.factorial(n)\\n",\par
+    "\\n",\par
+    "with ThreadPoolExecutor() as executor:\\n",\par
+    "    # Submitting factorial tasks for numbers from 1 to 10\\n",\par
+    "    results = list(executor.map(factorial, range(1, 11)))\\n",\par
+    "    print(results)\\n",\par
+    "\\n",\par
+    "#______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________\\n",\par
+    "#8. **Multiprocessing Pool for Squaring Numbers**:\\n",\par
+    "\\n",\par
+    "from multiprocessing import Pool\\n",\par
+    "import time\\n",\par
+    "\\n",\par
+    "def square(n):\\n",\par
+    "       return n * n\\n",\par
+    "\\n",\par
+    "   # Function to measure time\\n",\par
+    "def pool_square(pool_size):\\n",\par
+    "       with Pool(pool_size) as pool:\\n",\par
+    "           start_time = time.time()\\n",\par
+    "           results = pool.map(square, range(1, 11))\\n",\par
+    "           end_time = time.time()\\n",\par
+    "           print(f\\"Pool Size \{pool_size\}, Time Taken: \{end_time - start_time\} seconds\\")\\n",\par
+    "           print(results)\\n",\par
+    "\\n",\par
+    "   # Testing with different pool sizes\\n",\par
+    "for size in [2, 4, 8]:\\n",\par
+    "       pool_square(size)\\n",\par
+    "\\n",\par
+    "\\n"\par
+   ]\par
+  \},\par
+  \{\par
+   "cell_type": "code",\par
+   "execution_count": null,\par
+   "id": "56a5e6ca-f6b8-431f-92e6-5b901d441411",\par
+   "metadata": \{\},\par
+   "outputs": [],\par
+   "source": []\par
+  \}\par
+ ],\par
+ "metadata": \{\par
+  "kernelspec": \{\par
+   "display_name": "Python 3 (ipykernel)",\par
+   "language": "python",\par
+   "name": "python3"\par
+  \},\par
+  "language_info": \{\par
+   "codemirror_mode": \{\par
+    "name": "ipython",\par
+    "version": 3\par
+   \},\par
+   "file_extension": ".py",\par
+   "mimetype": "text/x-python",\par
+   "name": "python",\par
+   "nbconvert_exporter": "python",\par
+   "pygments_lexer": "ipython3",\par
+   "version": "3.13.0"\par
+  \}\par
+ \},\par
+ "nbformat": 4,\par
+ "nbformat_minor": 5\par
+\}\par
+\par
+}
+ 
